@@ -11,66 +11,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ----------------------------
-      # Checkout source code
-      # ----------------------------
+
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # ----------------------------
       # Install kubectl
-      # ----------------------------
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/kubectl
+          sudo mv kubectl /usr/local/bin/
 
-      # ----------------------------
-      # Docker Login
-      # ----------------------------
+      # Docker login
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # ----------------------------
-      # Build Docker Image
-      # ----------------------------
+      # Build image
       - name: Build Docker Image
-        run: |
-          docker build -t ketanupadhyay/spacy-streamlit:latest .
+        run: docker build -t ketanupadhyay/spacy-streamlit:latest .
 
-      # ----------------------------
-      # Push Docker Image
-      # ----------------------------
+      # Push image
       - name: Push Docker Image
-        run: |
-          docker push ketanupadhyay/spacy-streamlit:latest
+        run: docker push ketanupadhyay/spacy-streamlit:latest
 
-      # ----------------------------
-      # Setup kubeconfig
-      # ----------------------------
-      - name: Set up Kubeconfig
+      # ✅ FIXED kubeconfig setup
+      - name: Setup kubeconfig
         run: |
           mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
 
-      # ----------------------------
-      # Verify cluster connection
-      # ----------------------------
-      - name: Verify Cluster
+      # ✅ FIXED verify cluster
+      - name: Verify cluster
         run: |
+          export KUBECONFIG=$HOME/.kube/config
           kubectl cluster-info
           kubectl get nodes
 
-      # ----------------------------
-      # Deploy to Kubernetes
-      # ----------------------------
+      # ✅ FIXED deploy
       - name: Deploy to Kubernetes
         run: |
+          export KUBECONFIG=$HOME/.kube/config
           kubectl apply -f spacy-deployment.yaml
           kubectl apply -f spacy-service.yaml
-          kubectl rollout status deployment/spacy-deployment
+          kubectl rollout status deployment/spacy-streamlit-deployment
