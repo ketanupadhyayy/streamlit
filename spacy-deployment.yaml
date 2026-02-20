@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spacy-streamlit-deployment
+  labels:
+    app: spacy-streamlit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spacy-streamlit
+  template:
+    metadata:
+      labels:
+        app: spacy-streamlit
+    spec:
+      containers:
+      - name: spacy-streamlit
+        image: ketanupadhyay/spacy-streamlit:latest
+        ports:
+        - containerPort: 8501
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
