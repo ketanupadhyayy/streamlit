@@ -8,20 +8,23 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: self-hosted   # 🔥 IMPORTANT (not ubuntu-latest)
+    runs-on: ubuntu-latest
 
     steps:
+      # ----------------------------
+      # Checkout source code
+      # ----------------------------
       - name: Checkout Code
         uses: actions/checkout@v3
 
       # ----------------------------
-      # Install kubectl (if not installed)
+      # Install kubectl
       # ----------------------------
       - name: Install kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
+          sudo mv kubectl /usr/local/bin/kubectl
 
       # ----------------------------
       # Docker Login
@@ -47,7 +50,7 @@ jobs:
           docker push ketanupadhyay/spacy-streamlit:latest
 
       # ----------------------------
-      # Setup Kubeconfig (Correct Way)
+      # Setup kubeconfig
       # ----------------------------
       - name: Set up Kubeconfig
         run: |
@@ -56,7 +59,7 @@ jobs:
           chmod 600 $HOME/.kube/config
 
       # ----------------------------
-      # Verify Cluster Connection
+      # Verify cluster connection
       # ----------------------------
       - name: Verify Cluster
         run: |
@@ -70,3 +73,4 @@ jobs:
         run: |
           kubectl apply -f spacy-deployment.yaml
           kubectl apply -f spacy-service.yaml
+          kubectl rollout status deployment/spacy-deployment
